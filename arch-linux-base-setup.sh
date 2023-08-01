@@ -5,19 +5,6 @@ sudo pacman -Syy &&
     sudo pacman -S --needed --noconfirm pacman-contrib
     sudo pacman -S --needed --noconfirm reflector
 
-# ------------------------------------------------------------------------
-
-# Setting up locales & timezones
-echo -e "LANG=en_GB.UTF8" | sudo tee -a /etc/environment
-echo -e "LANGUAGE=en_GB.UTF8" | sudo tee -a /etc/environment
-echo -e "LC_ALL=en_GB.UTF8" | sudo tee -a /etc/environment
-echo -e "LC_COLLATE=C" | sudo tee -a /etc/environment
-sudo sed -i -e 's/^#en_GB.UTF-8 UTF-8/en_GB.UTF-8 UTF-8/' /etc/locale.gen
-sudo locale-gen en_GB.UTF-8
-sudo localectl set-locale LANG=en_GB.UTF-8
-sudo timedatectl set-timezone Europe/Moscow
-# Disable time sync service
-sudo systemctl mask time-sync.target >/dev/null 2>&1
 
 # ------------------------------------------------------------------------
 
@@ -102,13 +89,13 @@ gsettings set org.gnome.desktop.interface enable-animations false
 
 # Display
 gsettings set org.gnome.desktop.interface scaling-factor 1
-gsettings set org.gnome.desktop.interface text-scaling-factor 1.2
+gsettings set org.gnome.desktop.interface text-scaling-factor 1
 gsettings set org.gnome.mutter experimental-features "['x11-randr-fractional-scaling'"', '"'scale-monitor-framebuffer']"
 gsettings set org.gnome.settings-daemon.plugins.xsettings antialiasing 'rgba'
 gsettings set org.gnome.settings-daemon.plugins.xsettings hinting 'slight'
 
 # Keyboard
-gsettings set org.gnome.desktop.peripherals.keyboard delay 500
+gsettings set org.gnome.desktop.peripherals.keyboard delay 50000
 gsettings set org.gnome.desktop.peripherals.keyboard repeat-interval 100
 
 # Mouse
@@ -122,22 +109,7 @@ gsettings set org.gnome.shell.overrides edge-tiling true
 gsettings set org.gnome.mutter edge-tiling true
 gsettings set org.gnome.desktop.background color-shading-type vertical
 
-# ------------------------------------------------------------------------
 
-# KDE tweaks
-kwriteconfig5 --file kwinrc --group Compositing --key "Enabled" --type bool true
-kwriteconfig5 --file kwinrc --group Compositing --key "LatencyPolicy" "ExtremelyLow"
-kwriteconfig5 --file kwinrc --group Compositing --key "AnimationSpeed" 3
-kwriteconfig5 --file kwinrc --group Windows --key "AutoRaiseInterval" 125
-kwriteconfig5 --file kwinrc --group Windows --key "DelayFocusInterval" 125
-kwriteconfig5 --file kdeglobals --group KDE --key "AnimationDurationFactor" 0.125
-kwriteconfig5 --file ksplashrc --group KSplash --key Engine "none"
-kwriteconfig5 --file ksplashrc --group KSplash --key Theme "none"
-kwriteconfig5 --file klaunchrc --group FeedbackStyle --key "BusyCursor" --type bool false
-kwriteconfig5 --file klaunchrc --group BusyCursorSettings --key "Blinking" --type bool false
-kwriteconfig5 --file klaunchrc --group BusyCursorSettings --key "Bouncing" --type bool false
-kwriteconfig5 --file kwalletrc --group Wallet --key "Enabled" --type bool false
-kwriteconfig5 --file kwalletrc --group Wallet --key "First Use" --type bool false
 
 # ------------------------------------------------------------------------
 
@@ -307,16 +279,11 @@ echo -e "options processor ignore_ppc=1" | sudo tee /etc/modprobe.d/ignore_ppc.c
 # ------------------------------------------------------------------------
 
 # btrfs tweaks if disk is
-sudo systemctl enable btrfs-scrub@home.timer
 sudo systemctl enable btrfs-scrub@-.timer
 sudo btrfs property set / compression lz4
-sudo btrfs property set /home compression lz4
 sudo btrfs filesystem defragment -r -v -clz4 /
 sudo chattr +c /
-sudo btrfs filesystem defragment -r -v -clz4 /home
-sudo chattr +c /home
 sudo btrfs balance start -musage=0 -dusage=50 /
-sudo btrfs balance start -musage=0 -dusage=50 /home
 sudo chattr +C /swapfile
 
 # ------------------------------------------------------------------------
